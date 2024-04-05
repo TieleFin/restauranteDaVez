@@ -4,7 +4,8 @@
   "description": "O desafio consiste em desenvolver um sistema destinado a simplificar a seleção do restaurante para o almoço dos funcionários de uma empresa. Diariamente, os colaboradores têm a oportunidade de votar em seu restaurante preferido para o almoço, sendo permitido apenas um voto por pessoa. Para garantir variedade, não é permitido escolher o mesmo restaurante mais de uma vez na mesma semana.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +14,8 @@
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
