@@ -7,15 +7,15 @@ const registerManager = async (req, res) => {
     try {
         const passwordEncrypted = await bcrypt.hash(senha, 10);
 
-        const userFound = await knex("administrador").where({ email }).first();
+    const managerFound = await knex("administradores").where({ email }).first();
 
-        if (userFound) {
+        if (managerFound) {
             return res
                 .status(400)
                 .json({ mensagem: "Esse email já possui cadastro" });
         }
 
-        const user = await knex("usuarios")
+        const manager = await knex("administradores")
             .insert({
                 nome,
                 email,
@@ -23,10 +23,11 @@ const registerManager = async (req, res) => {
             })
             .returning("*");
 
-        const { senha: _, ...userRegistered } = user[0];
+        const { senha: _, ...managerRegistered } = manager[0];
 
-        return res.status(201).json(userRegistered);
+        return res.status(201).json(managerRegistered);
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ mensagem: "Erro interno do servidor" });
     }
 };
