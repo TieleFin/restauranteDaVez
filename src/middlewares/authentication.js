@@ -19,9 +19,9 @@ const authenticatedManager = async (req, res, next) => {
             return res.status(404).json('Usuario não encontrado');
         }
 
-        const { senha, ...user } = userFound;
+        const { senha, ...manager } = managerFound;
 
-        req.user = user;
+        req.manager = manager;
 
         next()
 
