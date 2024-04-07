@@ -243,7 +243,7 @@ http://localhost:3000/restaurantes
 }
 ```
 
-### REALIZAR VOTO
+### VOTAÇÃO
 
 Permite que o usuário possa votar no restaurante que deseja almoçar naquele dia. Receberá o id do restaurante votado no corpo da requisição e o id do usuário responsável pelo voto como parâmetro da requisição
 
@@ -306,3 +306,6 @@ http://localhost:3000//resultadovotacao
 	]
 }
 ```
+
+
+Feito por [Tiele Frare Fin](https://github.com/TieleFin)
