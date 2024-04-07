@@ -1,7 +1,7 @@
 const knex = require('../connections/postgres');
 const jwt = require('jsonwebtoken');
 
-const authenticatedManager = async (req, res, next) => {
+const authenticatedUser = async (req, res, next) => {
     const { authorization } = req.headers;
 
     if (!authorization) {
@@ -13,15 +13,15 @@ const authenticatedManager = async (req, res, next) => {
     try {
         const { id } = jwt.verify(token, process.env.JWT_KEY);
 
-        const managerFound = await knex('administradores').where({ id }).first();
+        const userFound = await knex('usuarios').where({ id }).first();
 
-        if (!managerFound) {
+        if (!userFound) {
             return res.status(404).json('Usuario não encontrado');
         }
 
-        const { senha, ...manager } = managerFound;
+        const { senha, ...user } = userFound;
 
-        req.manager = manager;
+        req.user = user;
 
         next()
 
@@ -30,4 +30,4 @@ const authenticatedManager = async (req, res, next) => {
     }
 }
 
-module.exports = authenticatedManager;
+module.exports = authenticatedUser;

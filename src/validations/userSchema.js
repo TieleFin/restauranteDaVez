@@ -1,6 +1,6 @@
 const joi = require('joi')
 
-const managerSchema = joi.object({
+const userSchema = joi.object({
     nome: joi.string().required().messages({
         'any.required': 'O campo nome é obrigatório',
         'string.empty': 'O campo nome é obrigatório'
@@ -16,4 +16,4 @@ const managerSchema = joi.object({
     })
 })
 
-module.exports = managerSchema
+module.exports = userSchema

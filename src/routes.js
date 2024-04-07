@@ -1,21 +1,33 @@
 const express = require('express');
 
-const registerManager = require('./controllers/managerController');
-const loginManager = require('./controllers/loginManagerController')
-
+const { registerUser, detailUser } = require('./controllers/userController');
+const { registerRestaurant, getRestaurant } = require('./controllers/restaurantController')
+const login = require('./controllers/loginController')
+const { registerVote, computeVotes } = require('./controllers/voteController')
 
 const validateRequest = require('./middlewares/validateRequest');
-const authenticatedManager = require('./middlewares/authentication')
+const authenticatedUser = require('./middlewares/authenticated')
 
-const managerSchema = require('./validations/managerSchema');
-const loginSchema = require('./validations/loginSchema');
+const userSchema = require('./validations/userSchema');
+const restaurantSchema = require('./validations/restaurantSchema')
+const loginSchema = require('./validations/loginSchema')
+const voteSchema = require('./validations/voteSchema')
 
 const route = express();
 
+route.get('/restaurantes', getRestaurant)
 
-route.post('/administrador', validateRequest(managerSchema), registerManager);
-route.post('/login', validateRequest(loginSchema), loginManager);
+route.post('/usuario', validateRequest(userSchema), registerUser);
+route.post('/login', validateRequest(loginSchema), login);
 
-route.use(authenticatedManager);
+route.use(authenticatedUser);
+
+route.get('/usuario/:id', detailUser)
+
+route.post('/restaurantes', validateRequest(restaurantSchema), registerRestaurant);
+
+route.post('/votacao/:idUsuario', validateRequest(voteSchema), registerVote);
+route.get('/resultadovotacao', computeVotes)
+
 
 module.exports = route;
