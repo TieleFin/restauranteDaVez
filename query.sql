@@ -23,5 +23,9 @@ CREATE TABLE votacao (
     data_voto DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
-
+CREATE TABLE vencedores (
+    id SERIAL PRIMARY KEY,
+    restaurante_id INT REFERENCES restaurantes(id) NOT NULL,
+    data_voto DATE NOT NULL DEFAULT CURRENT_DATE
+);
 

@@ -1,5 +1,5 @@
 const knex = require("../connections/postgres");
-const { format, startOfDay, endOfDay } = require('date-fns');
+const { startOfDay, endOfDay, startOfWeek, endOfWeek } = require('date-fns');
 
 const registerVote = async (req, res) => {
     const { idRestaurant } = req.body;
@@ -7,9 +7,7 @@ const registerVote = async (req, res) => {
 
     try {
         const userExisting = await knex('usuarios')
-            .where({
-                id: idUsuario,
-            })
+            .where({ id: idUsuario })
             .first();
 
         if (!userExisting) {
@@ -17,9 +15,7 @@ const registerVote = async (req, res) => {
         }
 
         const restaurantExisting = await knex('restaurantes')
-            .where({
-                id: idRestaurant,
-            })
+            .where({ id: idRestaurant })
             .first();
 
         if (!restaurantExisting) {
@@ -35,7 +31,13 @@ const registerVote = async (req, res) => {
         }
 
         const currentDate = new Date();
-        //const formattedDate = format(currentDate);
+        const startOfWeekDate = startOfWeek(currentDate);
+        const endOfWeekDate = endOfWeek(currentDate);
+
+        const winnerRestaurantWeek = await knex('vencedores')
+            .select('restaurante_id')
+            .whereBetween('data_voto', [startOfWeekDate, endOfWeekDate])
+            .groupBy('restaurante_id')
 
         const voteExisting = await knex('votacao')
             .where({
@@ -43,6 +45,12 @@ const registerVote = async (req, res) => {
                 data_voto: currentDate
             })
             .first();
+
+        for (let week of winnerRestaurantWeek) {
+            if (week.restaurante_id === idRestaurant) {
+                return res.status(400).json({ mensagem: 'Esse restaurante não pode receber voto nessa semana' })
+            }
+        }
 
         if (voteExisting) {
             return res.status(400).json({ mensagem: 'Usuário já votou hoje' })
@@ -59,7 +67,6 @@ const registerVote = async (req, res) => {
         return res.status(201).json({ mensagem: 'Voto realizado com sucesso' });
 
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 };
@@ -69,6 +76,13 @@ const computeVotes = async (req, res) => {
         const currentDate = new Date();
         const startOfDayDate = startOfDay(currentDate);
         const endOfDayDate = endOfDay(currentDate);
+
+        const sizeUsers = await knex('usuarios')
+            .count('* as total');
+
+        const sizeVotes = await knex('votacao')
+            .count('* as total')
+            .whereBetween('data_voto', [startOfDayDate, endOfDayDate]);;
 
         const mostVotedRestaurants = await knex('votacao')
             .select('restaurante_id')
@@ -84,15 +98,28 @@ const computeVotes = async (req, res) => {
         const maxVotes = mostVotedRestaurants[0].total_votes;
         const winnerRestaurants = mostVotedRestaurants.filter(restaurant => restaurant.total_votes === maxVotes);
 
-        if (winnerRestaurants.length === 1) {
+        if (sizeVotes[0].total < sizeUsers[0].total) {
+            return res.status(404).json({ mensagem: 'Nem todos os usuários votaram' });
+        }
+
+        if (sizeVotes[0].total === sizeUsers[0].total) {
+
+            const resultComputade = await knex('vencedores')
+                .insert({
+                    restaurante_id: winnerRestaurants[0].restaurante_id,
+                    data_voto: currentDate
+                })
+                .returning('*');
             return res.status(200).json({ restaurante_mais_votado: winnerRestaurants[0] });
 
         } else {
-            return res.status(200).json({ mensagem: 'Empate nos votos entre vários restaurantes mais votados', restaurantes_empatados: winnerRestaurants });
+            return res.status(200).json({
+                mensagem: 'Empate nos votos entre vários restaurantes mais votados',
+                restaurantes_empatados: winnerRestaurants
+            });
         }
 
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 };
