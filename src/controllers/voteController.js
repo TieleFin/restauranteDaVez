@@ -29,7 +29,7 @@ const registerVote = async (req, res) => {
         if (!restaurant) {
             return res.status(400).json({ mensagem: 'Restaurante não encontrado' });
         }
-
+        
         const currentDate = new Date();
         const startOfWeekDate = startOfWeek(currentDate);
         const endOfWeekDate = endOfWeek(currentDate);
@@ -63,7 +63,6 @@ const registerVote = async (req, res) => {
                 data_voto: currentDate
             })
             .returning('*');
-
         return res.status(201).json({ mensagem: 'Voto realizado com sucesso' });
 
     } catch (error) {
@@ -98,12 +97,18 @@ const computeVotes = async (req, res) => {
         const maxVotes = mostVotedRestaurants[0].total_votes;
         const winnerRestaurants = mostVotedRestaurants.filter(restaurant => restaurant.total_votes === maxVotes);
 
+        if (mostVotedRestaurants.length > 1) {
+            return res.status(200).json({
+                mensagem: 'Empate nos votos entre vários restaurantes mais votados',
+                restaurantes_empatados: winnerRestaurants
+            });
+        }
+
         if (sizeVotes[0].total < sizeUsers[0].total) {
             return res.status(404).json({ mensagem: 'Nem todos os usuários votaram' });
         }
 
         if (sizeVotes[0].total === sizeUsers[0].total) {
-
             const resultComputade = await knex('vencedores')
                 .insert({
                     restaurante_id: winnerRestaurants[0].restaurante_id,
@@ -111,12 +116,6 @@ const computeVotes = async (req, res) => {
                 })
                 .returning('*');
             return res.status(200).json({ restaurante_mais_votado: winnerRestaurants[0] });
-
-        } else {
-            return res.status(200).json({
-                mensagem: 'Empate nos votos entre vários restaurantes mais votados',
-                restaurantes_empatados: winnerRestaurants
-            });
         }
 
     } catch (error) {
